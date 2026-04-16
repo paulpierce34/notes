@@ -1,0 +1,34 @@
+===== Change from enforcing to auditing procedure =====
+## Change from enforcing to auditing
+PS C:\Users\$env:USERNAME\Documents> $PolicyXML = ".\signed-and-reputable.xml"
+PS C:\Users\$env:USERNAME\Documents> Set-RuleOption -Filepath $PolicyXML -Option 3
+
+## Create the .cip file from the modified xml
+PS C:\Users\$env:USERNAME\Documents> $PolicyBinaryOutput = "C:\Users\$env:USERNAME\Documents\signed-and-reputable-auditing.cip"
+PS C:\Users\$env:USERNAME\Documents> ConvertFrom-CIPolicy $PolicyXML $PolicyBinaryOutput
+C:\Users\$env:USERNAME\Documents\signed-and-reputable-auditing.cip
+
+## Update policy with .cip file
+citool -up .\signed-and-reputable.cip
+=========================================================
+
+======= Import from event logs and merge into existing policy =============
+## You can even have audit mode enabled, monitor the event log locations noted below, parse event viewer for anything being blocked and output those to a separate xml file. Then merge the policy with the existing. This can be done with the WDAC wizard GUI or powershell
+
+## You can even audit eventviewer for anything that was blocked and add to an allow rule with:
+New-CIPolicy -Audit -Level FilePath -Fallback Hash -FilePath  "C:\Users\$env:USERNAME\Documents\test1.xml" 
+
+## Merge two xml policies together
+Merge-CIPolicy $PolicyPath1,$PolicyPath2 -OutputPath $Mergedpolicyxml
+
+## All of the rule options from the set-ruleoption cmdlet
+https://learn.microsoft.com/en-us/windows/security/application-security/application-control/app-control-for-business/design/select-types-of-rules-to-create#windows-defender-application-control-policy-rules
+
+## Event log locations
+Microsoft-Windows-CodeIntegrity/Operational
+Microsoft-Windows-Applocker/MSI and Script
+
+
+
+##tailscale rdp doc
+https://tailscale.com/docs/solutions/access-remote-desktops-using-windows-rdp?tab=windows
