@@ -73,7 +73,7 @@ write-host "Remote computer variable not configured... attempting to open hosts 
 
 Foreach ($SingleComputer in $AllComputers){
 
-$Outfilepath = "$env:USERPROFILE\Documents\" + $TodayDate + "-" + $SingleComputer + "extension-logs.txt"
+$Outfilepath = "$env:USERPROFILE\Documents\" + $TodayDate + "-" + $SingleComputer + "-extension-logs.txt"
 
 
 if ($Allcomputers -ne $null -and $CompletedComputers -notcontains $Singlecomputer){
