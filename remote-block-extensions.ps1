@@ -1,6 +1,6 @@
-﻿## PURPOSE: Block chrome/edge extensions, disable copilot/recall, disable OneDrive, disable/remove windows phonelink
-
 ## NOTE: Leave this RemoteComputer variable blank to reference host file if targeting numerous hosts: C:\Users\<username>\Documents\hosts.txt
+
+## Set to new-desktop as an example, if you were to target one host
 
 $RemoteComputer = "new-desktop"
 
@@ -19,7 +19,7 @@ $RemoteComputer = "new-desktop"
 
 ## Do not make changes below
 
-$Outfilepath = "$env:USERPROFILE\Documents\" + $TodayDate + "-" + "extension-logs.txt"
+# $Outfilepath = "$env:USERPROFILE\Documents\" + $TodayDate + "-" + "extension-logs.txt"
 
 
 $hostsfile = "$env:USERPROFILE\Documents\hosts.txt"
@@ -54,10 +54,12 @@ $credential = Get-credential
 $TodayDate = Get-Date -Format yyyy-MM-dd
 
 
+
 write-host -foregroundcolor cyan "Hosts detected in hosts file: $AllComputers"
 if ($RemoteComputer -ne ""){
 
 $AllComputers = $RemoteComputer
+write-host "Detected hosts in RemoteComputer variable. Bypassing hosts list"
 
 }
 else {
@@ -65,13 +67,22 @@ else {
 write-host "Remote computer variable not configured... attempting to open hosts file."
 
 }
+
+
+
+
 Foreach ($SingleComputer in $AllComputers){
+
+$Outfilepath = "$env:USERPROFILE\Documents\" + $TodayDate + "-" + $SingleComputer + "extension-logs.txt"
+
 
 if ($Allcomputers -ne $null -and $CompletedComputers -notcontains $Singlecomputer){
 
 write-host "$Singlecomputer not detected in completed hosts file, targeting this machine for script execution."
 
-Invoke-Command -Computername $SingleComputer -Credential $Credential -Scriptblock {
+
+try {
+Invoke-Command -Computername $SingleComputer -Credential $Credential -ErrorVariable ConnectionError -Scriptblock {
 
 write-output "=======================================`n"
 
@@ -146,20 +157,26 @@ if (!(Test-Path $PhoneLinkPath)) {
 New-Item -Path $PhoneLinkPath -Force
 }
 
-Set-ItemProperty -Path $PhoneLinkPath -Name "PhoneLinkEnabled" -Value 0 -Type Dword -Force
+Set-ItemProperty -Path $PhoneLinkPath -Name "PhoneLinkEnabled" -Value 1 -Type Dword -Force
 
 
 ## Run a gpupdate to force current session to adopt local group policy changes
 write-output "Running gpupdate command to enforce local policy modifications`n`n"
 gpupdate /force
 
-write-output "Script has completed."
+write-output "Script has completed successfully."
+
 
 } >> $Outfilepath
 
+## only write to completed hosts if the Try block succeeds
+if (Select-String -Path $Outfilepath -Pattern "Script has completed successfully.") { Write-Output $SingleComputer >> $completedhostsfile }
 
 
-write-output $SingleComputer >> $completedhostsfile
+}
+catch {
+    write-host -ForegroundColor Red "Failed on $SingleComputer : $($_.Exception.Message)"
+}
 
 
 
@@ -180,7 +197,7 @@ write-host -foregroundcolor yellow "Skipping detected host $Singlecomputer in co
 
 
 if (Test-Path $Outfilepath){
-write-host -ForegroundColor Green "Output filepath here: $Outfilepath"
+write-host -ForegroundColor Green "Log output filepath here: $Outfilepath"
 }
 else {
 write-host -ForegroundColor Red "Failed to create output log file here: $Outfilepath" 
