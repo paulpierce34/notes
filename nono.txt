@@ -1,0 +1,227 @@
+
+nono profile config locations:
+user1@DESKTOP-T3MSK83:~/sandbox$ find ~/.config/nono ~/.local/share/nono ~/.cache/nono -iname '*hermes*' 2>/dev/null
+/home/user1/.config/nono/packages/nolabs-ai/hermes
+/home/user1/.config/nono/packages/nolabs-ai/hermes/profiles/hermes.json
+/home/user1/.config/nono/packages/nolabs-ai/hermes/bin/nono-hermes-status.sh
+user1@DESKTOP-T3MSK83:~/sandbox$ find ~/.config/nono ~/.local/share/nono ~/.cache/nono -iname '*opencode*' 2>/dev/null
+/home/user1/.config/nono/profile-drafts/.nono-opencode-pack-marker
+/home/user1/.config/nono/packages/nolabs-ai/opencode
+/home/user1/.config/nono/packages/nolabs-ai/opencode/profiles/opencode.json
+
+Keep in mind the below profile imports the hermes.json one above 
+Working profile:
+{
+  "extends": [
+    "hermes"
+  ],
+  "meta": {
+    "name": "hermes-desktop",
+    "version": "",
+    "description": "Hermes Desktop on WSLg",
+    "author": null
+  },
+  "security": {
+    "signal_mode": null,
+    "process_info_mode": null,
+    "ipc_mode": null,
+    "capability_elevation": null,
+    "approval_backends": {},
+    "approval_defaults": null,
+    "wsl2_proxy_policy": null
+  },
+  "groups": {
+    "include": [],
+    "exclude": []
+  },
+  "commands": {
+    "allow": [],
+    "deny": [
+     "rm",
+     "dd"
+  ]
+  },
+  "filesystem": {
+    "allow": [
+      "$HOME/.config/Hermes",
+      "/mnt/wslg",
+      "/tmp",
+      "/dev/shm",
+      "/browser/zygote_host"
+    ],
+    "read": [
+      "/usr/lib/wsl"
+    ],
+    "write": [],
+    "allow_file": [
+      "/dev/dxg",
+      "/etc/gtk-3.0/settings.ini",
+      "/run/user/1000/dconf/user"
+    ],
+    "read_file": [],
+    "write_file": [],
+    "unix_socket": [],
+    "unix_socket_bind": [],
+    "unix_socket_dir": [],
+    "unix_socket_dir_bind": [],
+    "unix_socket_subtree": [
+      "/mnt/wslg"
+    ],
+    "unix_socket_subtree_bind": [],
+    "deny": [],
+    "bypass_protection": [],
+    "suppress_save_prompt": []
+  },
+  "network": {
+    "block": false,
+    "allow_http2": false,
+    "allow_domain": [],
+    "deny_domain": [],
+    "open_port": [],
+    "open_port_range": [],
+    "listen_port": [],
+    "listen_port_range": [],
+    "connect_port": [],
+    "no_proxy": [],
+    "custom_credentials": {},
+    "tls_intercept": null,
+    "upstream_proxy": null,
+    "upstream_bypass": []
+  },
+  "diagnostics": {
+    "suppress_system_services": [],
+    "redaction": {
+      "extra_env_vars": []
+    }
+  },
+  "linux": {
+    "af_unix_mediation": null,
+    "sandbox_policy": null
+  },
+  "env_credentials": {},
+  "credential_capture": {},
+  "credential_providers": {},
+  "credential_routes": [],
+  "workdir": {
+    "access": "none"
+  },
+  "hooks": {},
+  "session_hooks": {},
+  "rollback": {
+    "exclude_patterns": [],
+    "exclude_globs": []
+  },
+  "allow_gpu": true,
+  "skipdirs": [],
+  "packs": [],
+  "command_args": [],
+  "unsafe_macos_seatbelt_rules": []
+}
+
+
+
+## working command to run Hermes desktop
+nono run --allow /dev/shm --profile hermes-desktop -- \
+  /home/user1/.hermes/hermes-agent/apps/desktop/release/linux-unpacked/Hermes --no-sandbox
+
+
+## default hermes profile config which is imported by the above:
+{
+  "extends": "default",
+  "meta": {
+    "name": "hermes",
+    "version": "1.0.0",
+    "description": "Hermes Agent CLI profile (registry-managed)",
+    "author": "nolabs-ai"
+  },
+  "groups": {
+    "include": [
+      "python_runtime",
+      "node_runtime",
+      "rust_runtime",
+      { "name": "user_caches_macos", "when": "macos" },
+      { "name": "user_caches_linux", "when": "linux" },
+      { "name": "linux_sysfs_read", "when": "linux" },
+      "nix_runtime",
+      "git_config",
+      "unlink_protection"
+    ]
+  },
+  "security": {
+    "signal_mode": "isolated",
+    "capability_elevation": false
+  },
+  "filesystem": {
+    "allow": [
+      "$HOME/.hermes",
+      "$NONO_CONFIG/profile-drafts"
+    ],
+    "read": [
+      "$HOME/.local/bin",
+      "$HOME/.local/share/uv",
+      "$NONO_PACKAGES"
+    ],
+    "suppress_save_prompt": [
+      "$NONO_PACKAGES/nolabs-ai/hermes/plugin/nono-sandbox"
+    ]
+  },
+  "network": {
+    "block": false,
+    "allow_domain": [],
+    "credentials": [],
+    "open_port": [],
+    "listen_port": [],
+    "custom_credentials": {
+      "openai": {
+        "upstream": "https://api.openai.com/v1",
+        "credential_key": "OPENAI_API_KEY",
+        "inject_header": "Authorization",
+        "credential_format": "Bearer {}",
+        "env_var": "OPENAI_API_KEY"
+      },
+      "anthropic": {
+        "upstream": "https://api.anthropic.com",
+        "credential_key": "ANTHROPIC_API_KEY",
+        "inject_header": "x-api-key",
+        "credential_format": "{}",
+        "env_var": "ANTHROPIC_API_KEY"
+      },
+      "gemini": {
+        "upstream": "https://generativelanguage.googleapis.com/v1beta/openai",
+        "credential_key": "GOOGLE_API_KEY",
+        "inject_header": "Authorization",
+        "credential_format": "Bearer {}",
+        "env_var": "GEMINI_API_KEY"
+      },
+      "github": {
+        "upstream": "https://api.github.com",
+        "credential_key": "GITHUB_TOKEN",
+        "inject_header": "Authorization",
+        "credential_format": "token {}",
+        "env_var": "GITHUB_TOKEN"
+      },
+      "gitlab": {
+        "upstream": "https://gitlab.com/api",
+        "credential_key": "GITLAB_TOKEN",
+        "inject_header": "Authorization",
+        "credential_format": "Bearer {}",
+        "env_var": "GITLAB_TOKEN"
+      }
+    }
+  },
+  "workdir": { "access": "readwrite" },
+  "open_urls": {
+    "allow_localhost": true
+  },
+  "allow_launch_services": true,
+  "rollback": {
+    "exclude_patterns": [
+      "node_modules",
+      ".next",
+      "__pycache__",
+      "target",
+      ".hermes"
+    ],
+    "exclude_globs": ["*.tmp.[0-9]*.[0-9]*"]
+  }
+}
